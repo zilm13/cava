@@ -10,66 +10,56 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package net.consensys.cava.ssz;
+package net.consensys.cava.ssz.experimental
 
-import net.consensys.cava.bytes.Bytes;
-import net.consensys.cava.units.bigints.UInt256;
+import net.consensys.cava.bytes.Bytes
+import net.consensys.cava.ssz.SSZ
+import net.consensys.cava.units.bigints.UInt256
+import java.math.BigInteger
 
-import java.math.BigInteger;
-
-/**
- * A writer for encoding values to SSZ.
- */
-public interface SSZWriter {
+@ExperimentalUnsignedTypes
+interface SSZWriter {
 
   /**
    * Append an already SSZ encoded value.
    *
-   * Note that this method <b>may not</b> validate that {@code value} is a valid SSZ sequence. Appending an invalid SSZ
+   * Note that this method **may not** validate that `value` is a valid SSZ sequence. Appending an invalid SSZ
    * sequence will cause the entire SSZ encoding produced by this writer to also be invalid.
    *
    * @param value The SSZ encoded bytes to append.
    */
-  void writeSSZ(Bytes value);
+  fun writeSSZ(value: Bytes)
 
   /**
    * Append an already SSZ encoded value.
    *
-   * Note that this method <b>may not</b> validate that {@code value} is a valid SSZ sequence. Appending an invalid SSZ
+   * Note that this method **may not** validate that `value` is a valid SSZ sequence. Appending an invalid SSZ
    * sequence will cause the entire SSZ encoding produced by this writer to also be invalid.
    *
    * @param value The SSZ encoded bytes to append.
    */
-  default void writeSSZ(byte[] value) {
-    writeSSZ(Bytes.wrap(value));
-  }
+  fun writeSSZ(value: ByteArray) = writeSSZ(Bytes.wrap(value))
 
   /**
-   * Encode a {@link Bytes} value to SSZ.
+   * Encode a [Bytes] value to SSZ.
    *
    * @param value The byte array to encode.
    */
-  default void writeBytes(Bytes value) {
-    SSZ.encodeBytesTo(value, this::writeSSZ);
-  }
+  fun writeBytes(value: Bytes)
 
   /**
    * Encode a byte array to SSZ.
    *
    * @param value The byte array to encode.
    */
-  default void writeBytes(byte[] value) {
-    SSZ.encodeByteArrayTo(value, this::writeSSZ);
-  }
+  fun writeBytes(value: ByteArray)
 
   /**
    * Write a string to the output.
    *
    * @param str The string to write.
    */
-  default void writeString(String str) {
-    SSZ.encodeStringTo(str, this::writeSSZ);
-  }
+  fun writeString(str: String)
 
   /**
    * Write a two's-compliment integer to the output.
@@ -78,9 +68,7 @@ public interface SSZWriter {
    * @param bitLength The bit length of the integer value.
    * @throws IllegalArgumentException If the value is too large for the specified bit length.
    */
-  default void writeInt(int value, int bitLength) {
-    writeSSZ(SSZ.encodeLongToByteArray(value, bitLength));
-  }
+  fun writeInt(value: Int, bitLength: Int)
 
   /**
    * Write a two's-compliment long to the output.
@@ -89,9 +77,7 @@ public interface SSZWriter {
    * @param bitLength The bit length of the integer value.
    * @throws IllegalArgumentException If the value is too large for the specified bit length.
    */
-  default void writeLong(long value, int bitLength) {
-    writeSSZ(SSZ.encodeLongToByteArray(value, bitLength));
-  }
+  fun writeLong(value: Long, bitLength: Int)
 
   /**
    * Write a big integer to the output.
@@ -100,8 +86,8 @@ public interface SSZWriter {
    * @param bitLength The bit length of the integer value.
    * @throws IllegalArgumentException If the value is too large for the specified bit length.
    */
-  default void writeBigInteger(BigInteger value, int bitLength) {
-    writeSSZ(SSZ.encodeBigIntegerToByteArray(value, bitLength));
+  fun writeBigInteger(value: BigInteger, bitLength: Int) {
+    writeSSZ(SSZ.encodeBigIntegerToByteArray(value, bitLength))
   }
 
   /**
@@ -110,8 +96,8 @@ public interface SSZWriter {
    * @param value The integer to write.
    * @throws IllegalArgumentException If the value is too large for the specified bit length.
    */
-  default void writeInt8(int value) {
-    writeInt(value, 8);
+  fun writeInt8(value: Int) {
+    writeInt(value, 8)
   }
 
   /**
@@ -120,8 +106,8 @@ public interface SSZWriter {
    * @param value The integer to write.
    * @throws IllegalArgumentException If the value is too large for the specified bit length.
    */
-  default void writeInt16(int value) {
-    writeInt(value, 16);
+  fun writeInt16(value: Int) {
+    writeInt(value, 16)
   }
 
   /**
@@ -129,8 +115,8 @@ public interface SSZWriter {
    *
    * @param value The integer to write.
    */
-  default void writeInt32(int value) {
-    writeInt(value, 32);
+  fun writeInt32(value: Int) {
+    writeInt(value, 32)
   }
 
   /**
@@ -138,8 +124,8 @@ public interface SSZWriter {
    *
    * @param value The long to write.
    */
-  default void writeInt64(long value) {
-    writeLong(value, 64);
+  fun writeInt64(value: Long) {
+    writeLong(value, 64)
   }
 
   /**
@@ -149,9 +135,7 @@ public interface SSZWriter {
    * @param bitLength The bit length of the integer value.
    * @throws IllegalArgumentException If the value is too large for the specified bit length.
    */
-  default void writeUInt(int value, int bitLength) {
-    writeSSZ(SSZ.encodeULongToByteArray(value, bitLength));
-  }
+  fun writeUInt(value: UInt, bitLength: Int)
 
   /**
    * Write an unsigned long to the output.
@@ -160,9 +144,7 @@ public interface SSZWriter {
    * @param bitLength The bit length of the integer value.
    * @throws IllegalArgumentException If the value is too large for the specified bit length.
    */
-  default void writeULong(long value, int bitLength) {
-    writeSSZ(SSZ.encodeULongToByteArray(value, bitLength));
-  }
+  fun writeULong(value: ULong, bitLength: Int)
 
   /**
    * Write an 8-bit unsigned integer to the output.
@@ -170,8 +152,8 @@ public interface SSZWriter {
    * @param value The integer to write.
    * @throws IllegalArgumentException If the value is too large for the specified bit length.
    */
-  default void writeUInt8(int value) {
-    writeUInt(value, 8);
+  fun writeUInt8(value: UInt) {
+    writeUInt(value, 8)
   }
 
   /**
@@ -180,8 +162,8 @@ public interface SSZWriter {
    * @param value The integer to write.
    * @throws IllegalArgumentException If the value is too large for the specified bit length.
    */
-  default void writeUInt16(int value) {
-    writeUInt(value, 16);
+  fun writeUInt16(value: UInt) {
+    writeUInt(value, 16)
   }
 
   /**
@@ -189,8 +171,8 @@ public interface SSZWriter {
    *
    * @param value The integer to write.
    */
-  default void writeUInt32(long value) {
-    writeULong(value, 32);
+  fun writeUInt32(value: UInt) {
+    writeUInt(value, 32)
   }
 
   /**
@@ -198,17 +180,17 @@ public interface SSZWriter {
    *
    * @param value The long to write.
    */
-  default void writeUInt64(long value) {
-    writeULong(value, 64);
+  fun writeUInt64(value: ULong) {
+    writeULong(value, 64)
   }
 
   /**
-   * Write a {@link UInt256} to the output.
+   * Write a [UInt256] to the output.
    *
-   * @param value The {@link UInt256} to write.
+   * @param value The [UInt256] to write.
    */
-  default void writeUInt256(UInt256 value) {
-    writeSSZ(SSZ.encodeUInt256(value));
+  fun writeUInt256(value: UInt256) {
+    writeSSZ(SSZ.encodeUInt256(value))
   }
 
   /**
@@ -216,18 +198,18 @@ public interface SSZWriter {
    *
    * @param value The boolean value.
    */
-  default void writeBoolean(boolean value) {
-    writeSSZ(SSZ.encodeBoolean(value));
+  fun writeBoolean(value: Boolean) {
+    writeSSZ(SSZ.encodeBoolean(value))
   }
 
   /**
    * Write an address.
    *
    * @param address The address (must be exactly 20 bytes).
-   * @throws IllegalArgumentException If {@code address.size != 20}.
+   * @throws IllegalArgumentException If `address.size != 20`.
    */
-  default void writeAddress(Bytes address) {
-    writeSSZ(SSZ.encodeAddress(address));
+  fun writeAddress(address: Bytes) {
+    writeSSZ(SSZ.encodeAddress(address))
   }
 
   /**
@@ -235,8 +217,8 @@ public interface SSZWriter {
    *
    * @param hash The hash.
    */
-  default void writeHash(Bytes hash) {
-    writeSSZ(SSZ.encodeHash(hash));
+  fun writeHash(hash: Bytes) {
+    writeSSZ(SSZ.encodeHash(hash))
   }
 
   /**
@@ -244,18 +226,14 @@ public interface SSZWriter {
    *
    * @param elements The bytes to write as a list.
    */
-  default void writeBytesList(Bytes... elements) {
-    SSZ.encodeBytesListTo(elements, this::writeSSZ);
-  }
+  fun writeBytesList(vararg elements: Bytes)
 
   /**
    * Write a list of strings, which must be of the same length
    *
    * @param elements The strings to write as a list.
    */
-  default void writeStringList(String... elements) {
-    SSZ.encodeStringListTo(elements, this::writeSSZ);
-  }
+  fun writeStringList(vararg elements: String)
 
   /**
    * Write a list of two's compliment integers.
@@ -264,9 +242,7 @@ public interface SSZWriter {
    * @param elements The integers to write as a list.
    * @throws IllegalArgumentException If any values are too large for the specified bit length.
    */
-  default void writeIntList(int bitLength, int... elements) {
-    SSZ.encodeIntListTo(bitLength, elements, this::writeSSZ);
-  }
+  fun writeIntList(bitLength: Int, vararg elements: Int)
 
   /**
    * Write a list of two's compliment long integers.
@@ -275,9 +251,7 @@ public interface SSZWriter {
    * @param elements The long integers to write as a list.
    * @throws IllegalArgumentException If any values are too large for the specified bit length.
    */
-  default void writeLongIntList(int bitLength, long... elements) {
-    SSZ.encodeLongIntListTo(bitLength, elements, this::writeSSZ);
-  }
+  fun writeLongIntList(bitLength: Int, vararg elements: Long)
 
   /**
    * Write a list of big integers.
@@ -286,9 +260,7 @@ public interface SSZWriter {
    * @param elements The integers to write as a list.
    * @throws IllegalArgumentException if an integer cannot be stored in the number of bytes provided
    */
-  default void writeBigIntegerList(int bitLength, BigInteger... elements) {
-    SSZ.encodeBigIntegerListTo(bitLength, elements, this::writeSSZ);
-  }
+  fun writeBigIntegerList(bitLength: Int, vararg elements: BigInteger)
 
   /**
    * Write a list of 8-bit two's compliment integers.
@@ -296,8 +268,8 @@ public interface SSZWriter {
    * @param elements The integers to write as a list.
    * @throws IllegalArgumentException If any values are too large for the specified bit length.
    */
-  default void writeInt8List(int... elements) {
-    writeIntList(8, elements);
+  fun writeInt8List(vararg elements: Int) {
+    writeIntList(8, *elements)
   }
 
   /**
@@ -306,8 +278,8 @@ public interface SSZWriter {
    * @param elements The integers to write as a list.
    * @throws IllegalArgumentException If any values are too large for the specified bit length.
    */
-  default void writeInt16List(int... elements) {
-    writeIntList(16, elements);
+  fun writeInt16List(vararg elements: Int) {
+    writeIntList(16, *elements)
   }
 
   /**
@@ -316,8 +288,8 @@ public interface SSZWriter {
    * @param elements The integers to write as a list.
    * @throws IllegalArgumentException If any values are too large for the specified bit length.
    */
-  default void writeInt32List(int... elements) {
-    writeIntList(32, elements);
+  fun writeInt32List(vararg elements: Int) {
+    writeIntList(32, *elements)
   }
 
   /**
@@ -326,8 +298,8 @@ public interface SSZWriter {
    * @param elements The integers to write as a list.
    * @throws IllegalArgumentException If any values are too large for the specified bit length.
    */
-  default void writeInt64List(int... elements) {
-    writeIntList(64, elements);
+  fun writeInt64List(vararg elements: Int) {
+    writeIntList(64, *elements)
   }
 
   /**
@@ -337,9 +309,7 @@ public interface SSZWriter {
    * @param elements The integers to write as a list.
    * @throws IllegalArgumentException If any values are too large for the specified bit length.
    */
-  default void writeUIntList(int bitLength, int... elements) {
-    SSZ.encodeUIntListTo(bitLength, elements, this::writeSSZ);
-  }
+  fun writeUIntList(bitLength: Int, vararg elements: UInt)
 
   /**
    * Write a list of unsigned long integers.
@@ -348,9 +318,7 @@ public interface SSZWriter {
    * @param elements The long integers to write as a list.
    * @throws IllegalArgumentException If any values are too large for the specified bit length.
    */
-  default void writeULongIntList(int bitLength, long... elements) {
-    SSZ.encodeULongIntListTo(bitLength, elements, this::writeSSZ);
-  }
+  fun writeULongIntList(bitLength: Int, vararg elements: ULong)
 
   /**
    * Write a list of 8-bit unsigned integers.
@@ -358,8 +326,8 @@ public interface SSZWriter {
    * @param elements The integers to write as a list.
    * @throws IllegalArgumentException If any values are too large for the specified bit length.
    */
-  default void writeUInt8List(int... elements) {
-    writeUIntList(8, elements);
+  fun writeUInt8List(vararg elements: UInt) {
+    writeUIntList(8, *elements)
   }
 
   /**
@@ -368,8 +336,8 @@ public interface SSZWriter {
    * @param elements The integers to write as a list.
    * @throws IllegalArgumentException If any values are too large for the specified bit length.
    */
-  default void writeUInt16List(int... elements) {
-    writeUIntList(16, elements);
+  fun writeUInt16List(vararg elements: UInt) {
+    writeUIntList(16, *elements)
   }
 
   /**
@@ -378,8 +346,8 @@ public interface SSZWriter {
    * @param elements The integers to write as a list.
    * @throws IllegalArgumentException If any values are too large for the specified bit length.
    */
-  default void writeUInt32List(long... elements) {
-    writeULongIntList(32, elements);
+  fun writeUInt32List(vararg elements: ULong) {
+    writeULongIntList(32, *elements)
   }
 
   /**
@@ -388,8 +356,8 @@ public interface SSZWriter {
    * @param elements The integers to write as a list.
    * @throws IllegalArgumentException If any values are too large for the specified bit length.
    */
-  default void writeUInt64List(long... elements) {
-    writeULongIntList(64, elements);
+  fun writeUInt64List(vararg elements: ULong) {
+    writeULongIntList(64, *elements)
   }
 
   /**
@@ -397,35 +365,27 @@ public interface SSZWriter {
    *
    * @param elements The integers to write as a list.
    */
-  default void writeUInt256List(UInt256... elements) {
-    SSZ.encodeUInt256ListTo(elements, this::writeSSZ);
-  }
+  fun writeUInt256List(vararg elements: UInt256)
 
   /**
    * Write a list of hashes.
    *
    * @param elements The hashes to write as a list.
    */
-  default void writeHashList(Bytes... elements) {
-    SSZ.encodeHashListTo(elements, this::writeSSZ);
-  }
+  fun writeHashList(vararg elements: Bytes)
 
   /**
    * Write a list of addresses.
    *
    * @param elements The addresses to write as a list.
-   * @throws IllegalArgumentException If any {@code address.size != 20}.
+   * @throws IllegalArgumentException If any `address.size != 20`.
    */
-  default void writeAddressList(Bytes... elements) {
-    SSZ.encodeAddressListTo(elements, this::writeSSZ);
-  }
+  fun writeAddressList(vararg elements: Bytes)
 
   /**
    * Write a list of booleans.
    *
    * @param elements The booleans to write as a list.
    */
-  default void writeBooleanList(boolean... elements) {
-    SSZ.encodeBooleanListTo(elements, this::writeSSZ);
-  }
+  fun writeBooleanList(vararg elements: Boolean)
 }
