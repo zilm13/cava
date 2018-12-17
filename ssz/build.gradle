@@ -5,6 +5,7 @@ dependencies {
   compileOnly project(':units')
 
   testCompile project(':units')
+  testCompile project(':crypto')
   testCompile 'org.junit.jupiter:junit-jupiter-api'
   testCompile 'org.junit.jupiter:junit-jupiter-params'
 
