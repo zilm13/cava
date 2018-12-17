@@ -1,7 +1,9 @@
 package net.consensys.cava.ssz;
 
+import javafx.util.Pair;
 import net.consensys.cava.bytes.Bytes;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,31 +30,77 @@ public class SSZSerializerDecode {
     }
 
     private static Object decodeContainer(DecodeInputBox c) {
+        return decodeContainerImpl(c).getKey();
+    }
+
+    private static Pair<Object, Integer> decodeContainerImpl(DecodeInputBox c) {
         BytesSSZReader reader = c.reader;
 
         Bytes data = reader.readBytes();
-        if (!c.field.skipContainer) {
-            return SSZSerializer.decode(data.toArrayUnsafe(), c.field.type);
+        int dataSize = data.size();
+        if (c.field.skipContainer) {
+            Bytes lengthPrefix = SSZ.encodeUInt32(dataSize);
+            byte[] container = Bytes.concatenate(lengthPrefix, data).toArrayUnsafe();
+            return new Pair<>(SSZSerializer.decode(container, c.field.type), dataSize);
         } else {
-            // FIXME: find a clear way
-            return SSZSerializer.decode(SSZ.encodeBytes(data).toArrayUnsafe(), c.field.type); // Add length prefix
+            return new Pair<>(SSZSerializer.decode(data.toArrayUnsafe(), c.field.type), dataSize + 4);
         }
     }
 
     private static Object decodeList(DecodeInputBox c) {
         BytesSSZReader reader = c.reader;
+        Integer size = c.field.sszType.size;
 
-        // TODO: Other types
         switch (c.field.sszType.type) {
             case BYTES: {
                 return reader.readByteArrayList();
             }
             case HASH: {
-                return reader.readByteArrayList();
+                checkSizePresence(c.field);
+                return reader.readHashList(size);
+            }
+            case ADDRESS: {
+                return reader.readAddressList();
+            }
+            case STRING: {
+                return reader.readStringList();
+            }
+            case BOOLEAN: {
+                return reader.readBooleanList();
+            }
+            case INT: {
+                checkSizePresence(c.field);
+                return reader.readIntList(size);
+            }
+            case LONG: {
+                checkSizePresence(c.field);
+                return reader.readLongIntList(size);
+            }
+            case BIGINT: {
+                checkSizePresence(c.field);
+                return reader.readUnsignedBigIntegerList(size);
+            }
+            case CONTAINER: {
+                int remainingData = reader.readInt32();
+                List<Object> res = new ArrayList<>();
+                while (remainingData > 0) {
+                    Pair<Object, Integer> decodeRes = decodeContainerImpl(c);
+                    res.add(decodeRes.getKey());
+                    remainingData -= decodeRes.getValue();
+                }
+                return res;
             }
             default: {
-                throw new RuntimeException("Shouldn't be there!!!"); // TODO: normal exception
+                throw new RuntimeException(String.format("Decoding of list with type %s is not implemented yet",
+                        c.field.sszType.type));
             }
+        }
+    }
+
+    private static void checkSizePresence(SSZScheme.SSZField field) {
+        if (field.sszType.size == null) {
+            String error = String.format("Size of data type %s is required for decoding", field.sszType.type);
+            throw new RuntimeException(error);
         }
     }
 

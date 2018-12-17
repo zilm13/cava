@@ -24,8 +24,10 @@ public class SSZSerializerEncode {
         encodeHandlers.put(CONTAINER, SSZSerializerEncode::encodeContainer);
         encodeHandlers.put(BYTES, SSZSerializerEncode::encodeBytes);
         encodeHandlers.put(HASH, SSZSerializerEncode::encodeBytes);
+        encodeHandlers.put(ADDRESS, SSZSerializerEncode::encodeBytes);
         encodeHandlers.put(BIGINT, SSZSerializerEncode::encodeBigInt);
-        // FIXME: add string etc
+        encodeHandlers.put(BOOLEAN, SSZSerializerEncode::encodeBoolean);
+        encodeHandlers.put(STRING, SSZSerializerEncode::encodeString);
     }
 
     private static void encodeInt(EncodeInputBox input) {
@@ -123,7 +125,11 @@ public class SSZSerializerEncode {
                     input.result.write(SSZ.encodeStringList(data).toArrayUnsafe());
                     break;
                 }
-                // TODO: List of containers
+                case CONTAINER: {
+                    Bytes[] data = packContainerList((List<Object>) value, input.field);
+                    input.result.write(SSZ.encodeBytesList(data).toArrayUnsafe());
+                    break;
+                }
                 default: {
                     throw new RuntimeException(String.format("Type %s encoding is not implemented yet", internalType));
                 }
@@ -131,6 +137,24 @@ public class SSZSerializerEncode {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+    private static Bytes[] packContainerList(List<Object> values, SSZScheme.SSZField field) {
+        Bytes[] res = new Bytes[values.size()];
+        for (int i = 0; i < values.size(); ++i) {
+            byte[] data = SSZSerializer.encode(values.get(i));
+            Bytes curValue;
+            if (!field.skipContainer) {
+                Bytes prefix = SSZ.encodeInt32(data.length);
+                Bytes payload = Bytes.of(data);
+                curValue = Bytes.concatenate(prefix, payload);
+            } else {
+                curValue = Bytes.of(data);
+            }
+            res[i] = curValue;
+        }
+
+        return res;
     }
 
     private static Bytes[] repackBytesList(List<byte[]> list) {
@@ -168,7 +192,7 @@ public class SSZSerializerEncode {
         Bytes res;
 
         SSZType.Type type = input.field.sszType.type;
-        switch (type) { // TODO: check size
+        switch (type) {
             case HASH: {
                 res = SSZ.encodeHash(Bytes.of(data));
                 break;
@@ -189,6 +213,26 @@ public class SSZSerializerEncode {
             input.result.write(res.toArrayUnsafe());
         } catch (IOException e) {
             throw new RuntimeException(String.format("Failed to write data of type %s to stream", type), e);
+        }
+    }
+
+    private static void encodeBoolean(EncodeInputBox input) {
+        boolean value = (boolean) input.value;
+        Bytes res = SSZ.encodeBoolean(value);
+        try {
+            input.result.write(res.toArrayUnsafe());
+        } catch (IOException e) {
+            throw new RuntimeException(String.format("Failed to write boolean value \"%s\" to stream", value), e);
+        }
+    }
+
+    private static void encodeString(EncodeInputBox input) {
+        String value = (String) input.value;
+        Bytes res = SSZ.encodeString(value);
+        try {
+            input.result.write(res.toArrayUnsafe());
+        } catch (IOException e) {
+            throw new RuntimeException(String.format("Failed to write string value \"%s\" to stream", value), e);
         }
     }
 
@@ -215,6 +259,4 @@ public class SSZSerializerEncode {
             this.result = result;
         }
     }
-
-
 }
