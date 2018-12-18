@@ -10,22 +10,18 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package net.consensys.cava.junit;
-
-import java.security.Security;
-
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.ExtensionContext;
+package net.consensys.cava.rlpx;
 
 /**
- * A junit5 extension, that installs a BouncyCastle security provider.
- *
+ * Exception thrown when the message contents do not match the Message Authentication Code.
  */
-public class BouncyCastleExtension implements BeforeAllCallback {
+public class InvalidMACException extends RuntimeException {
 
-  @Override
-  public void beforeAll(ExtensionContext context) throws Exception {
-    Security.addProvider(new BouncyCastleProvider());
+  InvalidMACException(Throwable t) {
+    super(t);
+  }
+
+  InvalidMACException(String msg) {
+    super(msg);
   }
 }

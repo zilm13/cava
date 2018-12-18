@@ -10,22 +10,28 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package net.consensys.cava.junit;
-
-import java.security.Security;
-
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.ExtensionContext;
+package net.consensys.cava.rlpx.wire;
 
 /**
- * A junit5 extension, that installs a BouncyCastle security provider.
- *
+ * Default implementation of a sub protocol identifier
  */
-public class BouncyCastleExtension implements BeforeAllCallback {
+final class DefaultSubProtocolIdentifier implements SubProtocolIdentifier {
+
+  private final String name;
+  private final String version;
+
+  public DefaultSubProtocolIdentifier(String name, String version) {
+    this.name = name;
+    this.version = version;
+  }
 
   @Override
-  public void beforeAll(ExtensionContext context) throws Exception {
-    Security.addProvider(new BouncyCastleProvider());
+  public String name() {
+    return name;
+  }
+
+  @Override
+  public String version() {
+    return version;
   }
 }

@@ -10,22 +10,23 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package net.consensys.cava.junit;
+package net.consensys.cava.rlpx;
 
-import java.security.Security;
-
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.ExtensionContext;
+import net.consensys.cava.bytes.Bytes32;
+import net.consensys.cava.crypto.SECP256K1;
 
 /**
- * A junit5 extension, that installs a BouncyCastle security provider.
- *
+ * Contents of a message sent as part of a RLPx handshake.
  */
-public class BouncyCastleExtension implements BeforeAllCallback {
+public interface HandshakeMessage {
 
-  @Override
-  public void beforeAll(ExtensionContext context) throws Exception {
-    Security.addProvider(new BouncyCastleProvider());
-  }
+  /**
+   * @return the ephemeral public key included in the response
+   */
+  public SECP256K1.PublicKey ephemeralPublicKey();
+
+  /**
+   * @return the response nonce
+   */
+  public Bytes32 nonce();
 }
