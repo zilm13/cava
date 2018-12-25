@@ -16,8 +16,10 @@ import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -34,6 +36,11 @@ public class SSZSerializer {
   static int LENGTH_PREFIX_BYTE_SIZE = DEFAULT_INT_SIZE / Byte.SIZE;
 
   private static final String TYPE_REGEX = "^(\\D+)((\\d+)?)$";
+  private static final Set<SSZType.Type> NUMERIC_TYPES = new HashSet<SSZType.Type>(){{
+    add(SSZType.Type.INT);
+    add(SSZType.Type.LONG);
+    add(SSZType.Type.BIGINT);
+  }};
   private static Map<Class, SSZType> classToSSZType = new HashMap<>();
 
   static {
@@ -118,9 +125,10 @@ public class SSZSerializer {
     if (matcher.find()) {
       String type = matcher.group(1);
       String endNumber = matcher.group(3);
+      res.type = SSZType.Type.fromValue(type);
       if (endNumber != null) {
         int bitLength = Integer.valueOf(endNumber);
-        if (bitLength % Byte.SIZE != 0) {
+        if (res.type != null && NUMERIC_TYPES.contains(res.type) && bitLength % Byte.SIZE != 0) {
           String error = String.format("Size of field in bits should match whole bytes, found %s",
               extra);
           throw new RuntimeException(error);
@@ -128,7 +136,6 @@ public class SSZSerializer {
 
         res.size = bitLength;
       }
-      res.type = SSZType.Type.fromValue(type);
     } else {
       String error = String.format("Type annotation \"%s\" for class %s is not correct",
           extra, clazz.getName());
