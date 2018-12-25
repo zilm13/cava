@@ -8,7 +8,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * <p>Model field annotation</p>
+ * <p>SSZ model field annotation</p>
  *
  * <p>Clarifies SSZ encoding/decoding details</p>
  */
