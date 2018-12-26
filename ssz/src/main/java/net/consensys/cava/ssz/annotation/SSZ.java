@@ -17,33 +17,48 @@ import java.lang.annotation.Target;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SSZ {
+
+  // Handy type shortcuts
+  String UInt16 = "uint16";
+  String UInt24 = "uint24";
+  String UInt32 = "uint32";
+  String UInt64 = "uint64";
+  String UInt256 = "uint256";
+  String UInt384 = "uint384";
+  String UInt512 = "uint512";
+  String Bytes = "bytes";
+  String Hash = "hash";
+  String Hash32 = "hash32";
+  String Hash48 = "hash48";
+  String Bool = "bool";
+  String Address = "address";
+  String String = "string";
+
   /**
    * <p> Specifies type and size (for fixed sizes).
    * If custom type is specified, it overrides default type
    * mapped from Java class.</p>
-   * <p>Type should be one of: "int", "long", "bigint", "bytes",
+   * <p>Type should be one of: "uint", "bytes",
    * "hash", "boolean", "address", "string", "container".</p>
    * <p>Size could be omitted if it's not fixed. Otherwise for
    * non-byte types size should be multiplier of 8
    * as size is in bits. For byte types ("bytes", "hash",
-   * "address", "string") size is provided in bytes.</p>
+   * "address", "string") size is provided in bytes.
+   * Size is required for "uint" type.</p>
    *
    * <p>Types and default mapping:
    * <ul>
-   * <li>"int" - unsigned integer, with 32 bit maximum.
-   * int.class is mapped to "int32", short.class is mapped to "int16"</li>
-   * <li>"long" - unsigned long integer, with 64 bit maximum.
-   * long.class is mapped to "long64"</li>
-   * <li>"bigint" - unsigned big integer.
-   * BigInteger.class is mapped to "bigint"</li>
+   * <li>"uint" - unsigned integer.
+   * short.class is mapped to "uint16", int.class is mapped to "uint32",
+   * long.class is mapped to "uint64" by default</li>
    * <li>"bytes" - bytes data.
    * byte[].class is mapped to "bytes"</li>
    * <li>"hash" - same as bytes, but purposed to use to store hash.
    * no types are mapped to "hash" by default</li>
    * <li>"address" - bytes with size of 20, standard address size.
    * no types are mapped to "address" by default</li>
-   * <li>"boolean" - bool type.
-   * boolean.class is mapped to "boolean"</li>
+   * <li>"bool" - bool type.
+   * boolean.class is mapped to "bool"</li>
    * <li>"string" - string, text type.
    * String.class is mapped to "string"</li>
    * <li>"container" - type designed to store another model inside.

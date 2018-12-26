@@ -8,7 +8,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * <p>Identifies class that could be SSZ serializable</p>
+ * <p>Identifies class that is SSZ serializable</p>
  */
 @Documented
 @Target(ElementType.TYPE)
@@ -17,6 +17,9 @@ import java.lang.annotation.Target;
 public @interface SSZSerializable {
   /**
    * <p>If set, uses following method to get encoded class data</p>
+   *
+   * <p>When restoring the instance uses constructor with only "encode" method
+   * return type input parameter.</p>
    * @return method for encoding
    */
   String encode() default "";
