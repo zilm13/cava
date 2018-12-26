@@ -50,7 +50,7 @@ public @interface SSZ {
    * <ul>
    * <li>"uint" - unsigned integer.
    * short.class is mapped to "uint16", int.class is mapped to "uint32",
-   * long.class is mapped to "uint64" by default</li>
+   * long.class is mapped to "uint64" by default, BigInteger is mapped to "uint512"</li>
    * <li>"bytes" - bytes data.
    * byte[].class is mapped to "bytes"</li>
    * <li>"hash" - same as bytes, but purposed to use to store hash.
