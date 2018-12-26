@@ -37,6 +37,7 @@ public class SSZSerializer {
 
   private static final String TYPE_REGEX = "^(\\D+)((\\d+)?)$";
   private static final Set<SSZType.Type> NUMERIC_TYPES = new HashSet<SSZType.Type>(){{
+    add(SSZType.Type.UINT);
     add(SSZType.Type.INT);
     add(SSZType.Type.LONG);
     add(SSZType.Type.BIGINT);
@@ -77,12 +78,13 @@ public class SSZSerializer {
     }
 
     enum Type {
+      UINT("uint"),
       INT("int"),
       LONG("long"),
       BIGINT("bigint"),
       BYTES("bytes"),
       HASH("hash"),
-      BOOLEAN("boolean"),
+      BOOLEAN("bool"),
       ADDRESS("address"),
       STRING("string"),
       CONTAINER("container"),
@@ -126,9 +128,14 @@ public class SSZSerializer {
       String type = matcher.group(1);
       String endNumber = matcher.group(3);
       res.type = SSZType.Type.fromValue(type);
+      if (res.type.equals(SSZType.Type.UINT)) {  // Clarify
+        SSZType tmp = classToSSZType.get(clazz);
+        res.type = tmp.type;
+      }
+
       if (endNumber != null) {
         int bitLength = Integer.valueOf(endNumber);
-        if (res.type != null && NUMERIC_TYPES.contains(res.type) && bitLength % Byte.SIZE != 0) {
+        if (NUMERIC_TYPES.contains(res.type) && bitLength % Byte.SIZE != 0) {
           String error = String.format("Size of field in bits should match whole bytes, found %s",
               extra);
           throw new RuntimeException(error);
