@@ -24,6 +24,10 @@ import static net.consensys.cava.ssz.SSZSerializer.SSZType.Type.LIST;
 import static net.consensys.cava.ssz.SSZSerializer.SSZType.Type.LONG;
 import static net.consensys.cava.ssz.SSZSerializer.SSZType.Type.STRING;
 
+/**
+ * <p>Used for serialization of class to SSZ data</p>
+ * <p>For more information check {@link SSZSerializer}</p>
+ */
 public class SSZEncoder {
 
   private static Map<SSZType.Type, Consumer<EncodeInputBox>> encodeHandlers = new HashMap<>();

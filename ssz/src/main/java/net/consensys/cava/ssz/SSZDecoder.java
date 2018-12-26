@@ -20,6 +20,10 @@ import static net.consensys.cava.ssz.SSZSerializer.SSZType.Type.LIST;
 import static net.consensys.cava.ssz.SSZSerializer.SSZType.Type.LONG;
 import static net.consensys.cava.ssz.SSZSerializer.SSZType.Type.STRING;
 
+/**
+ * <p>Used for deserialization of SSZ data (restoring instance of class)</p>
+ * <p>For more information check {@link SSZSerializer}</p>
+ */
 public class SSZDecoder {
   private static Map<SSZSerializer.SSZType.Type, Function<DecodeInputBox, Object>> decodeHandlers
       = new HashMap<>();

@@ -2,6 +2,7 @@ package net.consensys.cava.ssz;
 
 import javafx.util.Pair;
 import net.consensys.cava.bytes.Bytes;
+import net.consensys.cava.ssz.annotation.SSZ;
 import net.consensys.cava.ssz.annotation.SSZSerializable;
 import net.consensys.cava.ssz.annotation.SSZTransient;
 import javax.annotation.Nullable;
@@ -27,6 +28,33 @@ import java.util.stream.Stream;
 
 import static java.util.function.Function.identity;
 
+/**
+ * <p>SSZ serializer/deserializer with automatic model reading
+ * using Java class with annotations as model description.</p>
+ *
+ * <p>{@link #buildScheme(Class)} is used to create SSZ model
+ * from Java class with annotations</p>
+ * <p>
+ * Following annotations are used for this:
+ * <ul>
+ * <li>{@link SSZSerializable} - Class which stores SSZ serializable data should be
+ * annotated with it, any type which is not java.lang.*</li>
+ * <li>{@link SSZ} - any field with Java type couldn't be automatically mapped to SSZ type,
+ * or with mapping that overrides standard, should be annotated with it. For standard
+ * mappings check {@link SSZ#type()} Javadoc.</li>
+ * <li>{@link SSZTransient} - Fields that should not be used in serialization
+ * should be marked with such annotation</li>
+ * </ul>
+ * </p>
+ *
+ * <p>For serialization use {@link #encode(Object)}. SSZ serializer
+ * uses getters for all non-transient fields to get current values.</p>
+ * <p>For deserialization, to restore instance use {@link #decode(byte[], Class)}.
+ * It will try to find constructor with all non-transient field types and the same order,
+ * to restore object. If failed, it will try to create empty instance from no-fields
+ * constructor and set each one by one by appropriate setter.
+ * If at least one field is failed to be set, {@link RuntimeException} is thrown.</p>
+ */
 public class SSZSerializer {
 
   static int DEFAULT_SHORT_SIZE = 16;
@@ -152,6 +180,13 @@ public class SSZSerializer {
     return res;
   }
 
+  /**
+   * <p>Serializes input using SSZ serialization and annotations markup</p>
+   * <p>Uses getters for all non-transient fields to get current values.</p>
+   * @param input  input class, should be marked {@link SSZSerializable}, for more
+   *               information about annotation markup, check {@link #buildScheme(Class)}
+   * @return SSZ serialization
+   */
   public static byte[] encode(Object input) {
     checkSSZSerializableAnnotation(input.getClass());
 
@@ -198,6 +233,24 @@ public class SSZSerializer {
     }
   }
 
+  /**
+   * <p>Builds scheme of SSZ serializable model using Java class with annotations markup</p>
+   *
+   * <p>
+   * Following annotations are used for this:
+   * <ul>
+   * <li>{@link SSZSerializable} - Class which stores SSZ serializable data should be
+   * annotated with it, any type which is not java.lang.*</li>
+   * <li>{@link SSZ} - any field with Java type couldn't be automatically mapped to SSZ type,
+   * or with mapping that overrides standard, should be annotated with it. For standard
+   * mappings check {@link SSZ#type()} Javadoc.</li>
+   * <li>{@link SSZTransient} - Fields that should not be used in serialization
+   * should be marked with such annotation</li>
+   * </ul>
+   * </p>
+   * @param clazz  Java class with SSZ annotations markup
+   * @return  scheme of SSZ model
+   */
   private static SSZScheme buildScheme(Class clazz) {
     SSZScheme scheme = new SSZScheme();
     SSZSerializable mainAnnotation = (SSZSerializable) clazz.getAnnotation(SSZSerializable.class);
@@ -272,6 +325,17 @@ public class SSZSerializer {
     return scheme;
   }
 
+  /**
+   * <p>Restores data instance from serialization data using model with annotations markup</p>
+   * <p>It will try to find constructor with all non-transient field types and the same order,
+   * to restore object. If failed, it will try to create empty instance from no-fields
+   * constructor and set each one by one by appropriate setter.
+   * If at least one field is failed to be set, {@link RuntimeException} is thrown.</p>
+   * @param data     SSZ serialization data
+   * @param clazz    type class, should be marked {@link SSZSerializable}, for more
+   *                 information about annotation markup, check {@link #buildScheme(Class)}
+   * @return deserialized instance of clazz or throws exception
+   */
   public static Object decode(byte[] data, Class clazz) {
     checkSSZSerializableAnnotation(clazz);
 
