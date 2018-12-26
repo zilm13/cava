@@ -17,21 +17,21 @@ public class AttestationRecord {
     // Slot number
     private final long slot;
     // Shard ID
-    @SSZ(type="int24")
+    @SSZ(type=SSZ.UInt24)
     private final int shardId;
     // List of block hashes that this signature is signing over that
     // are NOT part of the current chain, in order of oldest to newest
-    @SSZ(type="hash32")
+    @SSZ(type=SSZ.Hash32)
     private final List<byte[]> obliqueParentHashes;
     // Block hash in the shard that we are attesting to
-    @SSZ(type="hash32")
+    @SSZ(type=SSZ.Hash32)
     private final byte[] shardBlockHash;
     // Who is participating
-    @SSZ(type="bytes", skipContainer = true)
+    @SSZ(type=SSZ.Bytes, skipContainer = true)
     private final Bitfield attesterBitfield;
     // Last justified block
     private final long justifiedSlot;
-    @SSZ(type="hash32")
+    @SSZ(type=SSZ.Hash32)
     private final byte[] justifiedBlockHash;
     // The actual signature
     private final Sign.Signature aggregateSig;
