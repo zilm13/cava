@@ -27,12 +27,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.function.Function.identity;
+import static net.consensys.cava.ssz.SSZSchemeBuilder.SSZScheme;
 
 /**
  * <p>SSZ serializer/deserializer with automatic model reading
  * using Java class with annotations as model description.</p>
  *
- * <p>{@link #buildScheme(Class)} is used to create SSZ model
+ * <p>{@link SSZAnnotationSchemeBuilder} is used to create SSZ model
  * from Java class with annotations</p>
  * <p>
  * Following annotations are used for this:
@@ -184,7 +185,8 @@ public class SSZSerializer {
    * <p>Serializes input using SSZ serialization and annotations markup</p>
    * <p>Uses getters for all non-transient fields to get current values.</p>
    * @param input  input class, should be marked {@link SSZSerializable}, for more
-   *               information about annotation markup, check {@link #buildScheme(Class)}
+   *               information about annotation markup, check scheme builder
+   *               {@link SSZAnnotationSchemeBuilder}
    * @return SSZ serialization
    */
   public static byte[] encode(Object input) {
@@ -234,95 +236,15 @@ public class SSZSerializer {
   }
 
   /**
-   * <p>Builds scheme of SSZ serializable model using Java class with annotations markup</p>
-   *
-   * <p>
-   * Following annotations are used for this:
-   * <ul>
-   * <li>{@link SSZSerializable} - Class which stores SSZ serializable data should be
-   * annotated with it, any type which is not java.lang.*</li>
-   * <li>{@link SSZ} - any field with Java type couldn't be automatically mapped to SSZ type,
-   * or with mapping that overrides standard, should be annotated with it. For standard
-   * mappings check {@link SSZ#type()} Javadoc.</li>
-   * <li>{@link SSZTransient} - Fields that should not be used in serialization
-   * should be marked with such annotation</li>
-   * </ul>
-   * </p>
-   * @param clazz  Java class with SSZ annotations markup
-   * @return  scheme of SSZ model
+   * Builds class scheme using {@link SSZAnnotationSchemeBuilder}
+   * @param clazz type class, should be marked {@link SSZSerializable}
+   * @return SSZ model scheme
    */
   private static SSZScheme buildScheme(Class clazz) {
-    SSZScheme scheme = new SSZScheme();
-    SSZSerializable mainAnnotation = (SSZSerializable) clazz.getAnnotation(SSZSerializable.class);
+    SSZAnnotationSchemeBuilder annotationSchemeBuilder =
+        new SSZAnnotationSchemeBuilder(clazz);
 
-    // Encode parameter means we don't need to serialize class
-    // using any built-in logic, we should only call "encode"
-    // method to get all object data and that's all!
-    if(!mainAnnotation.encode().isEmpty()) {
-      SSZScheme.SSZField encode = new SSZScheme.SSZField();
-      encode.type = byte[].class;
-      encode.sszType = SSZType.of(SSZType.Type.BYTES);
-      encode.name = "encode";
-      encode.getter = mainAnnotation.encode();
-      scheme.fields.add(encode);
-      return scheme;
-    }
-
-    // No encode parameter, build scheme field by field
-    Map<String, Method> fieldGetters = new HashMap<>();
-    try {
-      for (PropertyDescriptor pd: Introspector.getBeanInfo(clazz).getPropertyDescriptors()) {
-        fieldGetters.put(pd.getName(), pd.getReadMethod());
-      }
-    } catch (IntrospectionException e) {
-      String error = String.format("Couldn't enumerate all getters in class %s", clazz.getName());
-      throw new RuntimeException(error, e);
-    }
-
-    for (Field field : clazz.getDeclaredFields()) {
-
-      // Skip SSZTransient
-      boolean transientField = false;
-      for (Annotation annotation : field.getAnnotations()) {
-        if (annotation.annotationType().equals(SSZTransient.class)) {
-          transientField = true;
-          break;
-        }
-      }
-      if (transientField) {
-        continue;
-      }
-
-      // Check for SSZ annotation and read its parameters
-      Class type = field.getType();
-      net.consensys.cava.ssz.annotation.SSZ annotation = null;
-      if (field.isAnnotationPresent(net.consensys.cava.ssz.annotation.SSZ.class)) {
-        annotation = field.getAnnotation(net.consensys.cava.ssz.annotation.SSZ.class);
-      }
-      String typeAnnotation = null;
-      if (annotation != null && !annotation.type().isEmpty()) {
-        typeAnnotation = annotation.type();
-      }
-
-      // Construct SSZField
-      SSZScheme.SSZField newField = new SSZScheme.SSZField();
-      if (annotation != null && annotation.skipContainer()) {
-        newField.skipContainer = true;
-      }
-      newField.type = type;
-      String name = field.getName();
-      newField.name = name;
-      SSZType sszType = extractType(type, typeAnnotation);
-      newField.sszType = sszType;
-      if (sszType.type.equals(SSZType.Type.CONTAINER) && newField.skipContainer == null) {
-        newField.skipContainer = false;
-      }
-
-      newField.getter = fieldGetters.containsKey(name) ? fieldGetters.get(name).getName() : null;
-      scheme.fields.add(newField);
-    }
-
-    return scheme;
+    return annotationSchemeBuilder.build();
   }
 
   /**
@@ -333,7 +255,7 @@ public class SSZSerializer {
    * If at least one field is failed to be set, {@link RuntimeException} is thrown.</p>
    * @param data     SSZ serialization data
    * @param clazz    type class, should be marked {@link SSZSerializable}, for more
-   *                 information about annotation markup, check {@link #buildScheme(Class)}
+   *                 information about annotation markup, check {@link SSZAnnotationSchemeBuilder}
    * @return deserialized instance of clazz or throws exception
    */
   public static Object decode(byte[] data, Class clazz) {

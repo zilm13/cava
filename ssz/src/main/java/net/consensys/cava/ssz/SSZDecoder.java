@@ -19,6 +19,7 @@ import static net.consensys.cava.ssz.SSZSerializer.SSZType.Type.INT;
 import static net.consensys.cava.ssz.SSZSerializer.SSZType.Type.LIST;
 import static net.consensys.cava.ssz.SSZSerializer.SSZType.Type.LONG;
 import static net.consensys.cava.ssz.SSZSerializer.SSZType.Type.STRING;
+import static net.consensys.cava.ssz.SSZSchemeBuilder.SSZScheme.SSZField;
 
 /**
  * <p>Used for deserialization of SSZ data (restoring instance of class)</p>
@@ -113,7 +114,7 @@ public class SSZDecoder {
     }
   }
 
-  private static void checkSizePresence(SSZScheme.SSZField field) {
+  private static void checkSizePresence(SSZField field) {
     if (field.sszType.size == null) {
       String error = String.format("Size of data type %s is required for decoding",
           field.sszType.type);
@@ -121,7 +122,7 @@ public class SSZDecoder {
     }
   }
 
-  public static Object decodeField(SSZScheme.SSZField field, BytesSSZReader reader) {
+  public static Object decodeField(SSZField field, BytesSSZReader reader) {
     Function<DecodeInputBox, Object> handler;
     if (field.type.equals(List.class)) {
       handler = decodeHandlers.get(LIST);
@@ -137,10 +138,10 @@ public class SSZDecoder {
   }
 
   static class DecodeInputBox {
-    SSZScheme.SSZField field;
+    SSZField field;
     BytesSSZReader reader;
 
-    DecodeInputBox(SSZScheme.SSZField field, BytesSSZReader reader) {
+    DecodeInputBox(SSZField field, BytesSSZReader reader) {
       this.field = field;
       this.reader = reader;
     }

@@ -23,6 +23,7 @@ import static net.consensys.cava.ssz.SSZSerializer.SSZType.Type.INT;
 import static net.consensys.cava.ssz.SSZSerializer.SSZType.Type.LIST;
 import static net.consensys.cava.ssz.SSZSerializer.SSZType.Type.LONG;
 import static net.consensys.cava.ssz.SSZSerializer.SSZType.Type.STRING;
+import static net.consensys.cava.ssz.SSZSchemeBuilder.SSZScheme.SSZField;
 
 /**
  * <p>Used for serialization of class to SSZ data</p>
@@ -159,7 +160,7 @@ public class SSZEncoder {
     }
   }
 
-  private static Bytes[] packContainerList(List<Object> values, SSZScheme.SSZField field) {
+  private static Bytes[] packContainerList(List<Object> values, SSZField field) {
     Bytes[] res = new Bytes[values.size()];
     for (int i = 0; i < values.size(); ++i) {
       byte[] data = SSZSerializer.encode(values.get(i));
@@ -262,7 +263,7 @@ public class SSZEncoder {
     }
   }
 
-  public static void encodeField(Object value, SSZScheme.SSZField field, OutputStream result) {
+  public static void encodeField(Object value, SSZField field, OutputStream result) {
     if (field.type.equals(List.class)) {
       encodeHandlers.get(LIST).accept(new EncodeInputBox(value, field, result));
     } else {
@@ -276,10 +277,10 @@ public class SSZEncoder {
 
   static class EncodeInputBox {
     Object value;
-    SSZScheme.SSZField field;
+    SSZField field;
     OutputStream result;
 
-    EncodeInputBox(Object value, SSZScheme.SSZField field, OutputStream result) {
+    EncodeInputBox(Object value, SSZField field, OutputStream result) {
       this.value = value;
       this.field = field;
       this.result = result;
