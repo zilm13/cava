@@ -45,6 +45,9 @@ public @interface SSZ {
    * as size is in bits. For byte types ("bytes", "hash",
    * "address", "string") size is provided in bytes.
    * Size is required for "uint" type.</p>
+   * <p>For List declare type of values,
+   * which list holds, if type of this values could not be
+   * mapped automatically.</p>
    *
    * <p>Types and default mapping:
    * <ul>
