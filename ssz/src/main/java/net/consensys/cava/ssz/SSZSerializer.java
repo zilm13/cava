@@ -63,6 +63,7 @@ public class SSZSerializer {
   static int DEFAULT_LONG_SIZE = 64;
   static int DEFAULT_BIGINT_SIZE = 512;
   static int LENGTH_PREFIX_BYTE_SIZE = DEFAULT_INT_SIZE / Byte.SIZE;
+  static byte[] EMPTY_PREFIX = new byte[LENGTH_PREFIX_BYTE_SIZE];
 
   private static final String TYPE_REGEX = "^(\\D+)((\\d+)?)$";
   private static final Set<SSZType.Type> NUMERIC_TYPES = new HashSet<SSZType.Type>(){{
@@ -184,28 +185,34 @@ public class SSZSerializer {
   /**
    * <p>Serializes input using SSZ serialization and annotations markup</p>
    * <p>Uses getters for all non-transient fields to get current values.</p>
-   * @param input  input class, should be marked {@link SSZSerializable}, for more
+   * @param input  input value
+   * @param clazz  Class of value, should be marked {@link SSZSerializable}, for more
    *               information about annotation markup, check scheme builder
    *               {@link SSZAnnotationSchemeBuilder}
    * @return SSZ serialization
    */
-  public static byte[] encode(Object input) {
-    checkSSZSerializableAnnotation(input.getClass());
+  public static byte[] encode(Object input, Class clazz) {
+    checkSSZSerializableAnnotation(clazz);
+
+    // Null check
+    if (input == null) {
+      return EMPTY_PREFIX;
+    }
 
     // Fill up map with all available method getters
     Map<String, Method> getters = new HashMap<>();
     try {
-      for (PropertyDescriptor pd : Introspector.getBeanInfo(input.getClass()).getPropertyDescriptors()) {
+      for (PropertyDescriptor pd : Introspector.getBeanInfo(clazz).getPropertyDescriptors()) {
         getters.put(pd.getReadMethod().getName(), pd.getReadMethod());
       }
     } catch (IntrospectionException e) {
       String error = String.format("Couldn't enumerate all getters in class %s",
-          input.getClass().getName());
+          clazz.getName());
       throw new RuntimeException(error, e);
     }
 
     // Encode object fields one by one
-    SSZScheme scheme = buildScheme(input.getClass());
+    SSZScheme scheme = buildScheme(clazz);
     ByteArrayOutputStream res = new ByteArrayOutputStream();
     for (SSZScheme.SSZField field : scheme.fields) {
       Object value;
@@ -214,7 +221,7 @@ public class SSZSerializer {
         if (getter != null) {   // We have getter
           value = getter.invoke(input);
         } else {                // Trying to access field directly
-          value = input.getClass().getField(field.name).get(input);
+          value = clazz.getField(field.name).get(input);
         }
       } catch (Exception e) {
         String error = String.format("Failed to get value from field %s, your should "
@@ -226,6 +233,14 @@ public class SSZSerializer {
     }
 
     return res.toByteArray();
+  }
+
+  /**
+   * <p>Shortcut to {@link #encode(Object, Class)}. Resolves
+   * class using input object. Not suitable for null values.</p>
+   */
+  public static byte[] encode(Object input) {
+    return encode(input, input.getClass());
   }
 
   private static void checkSSZSerializableAnnotation(Class clazz) {
@@ -260,6 +275,11 @@ public class SSZSerializer {
    */
   public static Object decode(byte[] data, Class clazz) {
     checkSSZSerializableAnnotation(clazz);
+
+    // Fast null handling
+    if (Arrays.equals(data, EMPTY_PREFIX)) {
+      return null;
+    }
 
     SSZScheme scheme = buildScheme(clazz);
     List<SSZScheme.SSZField> fields = scheme.fields;

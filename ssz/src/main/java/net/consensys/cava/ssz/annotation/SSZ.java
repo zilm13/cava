@@ -45,6 +45,9 @@ public @interface SSZ {
    * as size is in bits. For byte types ("bytes", "hash",
    * "address", "string") size is provided in bytes.
    * Size is required for "uint" type.</p>
+   * <p>Numeric types and other fixed size types doesn't support
+   * null values. On attempt to encode such value
+   * {@link NullPointerException} will be thrown.</p>
    * <p>For List declare type of values,
    * which list holds, if type of this values could not be
    * mapped automatically.</p>
@@ -68,7 +71,7 @@ public @interface SSZ {
    * Any class which has no default mapping will be handled
    * as Container and should be SSZ-serializable.</li>
    * </ul>
-   * </p>  TODO: Null values handling!!!11
+   * </p>
    *
    * <p>Examples: "bytes", "hash32"</p>
    */

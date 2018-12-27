@@ -163,7 +163,7 @@ public class SSZEncoder {
   private static Bytes[] packContainerList(List<Object> values, SSZField field) {
     Bytes[] res = new Bytes[values.size()];
     for (int i = 0; i < values.size(); ++i) {
-      byte[] data = SSZSerializer.encode(values.get(i));
+      byte[] data = SSZSerializer.encode(values.get(i), field.type);
       Bytes curValue;
       if (field.skipContainer) {
         curValue = Bytes.of(data);
@@ -190,7 +190,7 @@ public class SSZEncoder {
 
   private static void encodeContainer(EncodeInputBox input) {
     Object value = input.value;
-    byte[] data = SSZSerializer.encode(value);
+    byte[] data = SSZSerializer.encode(value, input.field.type);
 
     if (!input.field.skipContainer) {
       try {

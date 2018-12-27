@@ -5,6 +5,7 @@ import net.consensys.cava.ssz.annotation.SSZSerializable;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import static com.sun.org.apache.bcel.internal.classfile.Utility.toHexString;
 
@@ -87,13 +88,13 @@ public class AttestationRecord {
         if (o == null || getClass() != o.getClass()) return false;
         AttestationRecord that = (AttestationRecord) o;
         return slot == that.slot &&
-                shardId == that.shardId &&
-                justifiedSlot == that.justifiedSlot &&
-                obliqueParentHashes.equals(that.obliqueParentHashes) &&
-                Arrays.equals(shardBlockHash, that.shardBlockHash) &&
-                attesterBitfield.equals(that.attesterBitfield) &&
-                Arrays.equals(justifiedBlockHash, that.justifiedBlockHash) &&
-                aggregateSig.equals(that.aggregateSig);
+            shardId == that.shardId &&
+            justifiedSlot == that.justifiedSlot &&
+            Objects.equals(obliqueParentHashes, that.obliqueParentHashes) &&
+            Arrays.equals(shardBlockHash, that.shardBlockHash) &&
+            Objects.equals(attesterBitfield, that.attesterBitfield) &&
+            Arrays.equals(justifiedBlockHash, that.justifiedBlockHash) &&
+            Objects.equals(aggregateSig, that.aggregateSig);
     }
 
     @Override
